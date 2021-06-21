@@ -1,4 +1,4 @@
-class tabular_classifier(auto_tabular):
+class TabularClassifier(AutoTabular):
     def __init__(self):
         super().__init__()
 

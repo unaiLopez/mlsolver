@@ -1,4 +1,4 @@
-class tabular_regressor(auto_tabular):
+class TabularRegressor(AutoTabular):
     def __init__(self):
         super().__init__()
 

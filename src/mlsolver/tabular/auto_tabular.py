@@ -1,5 +1,5 @@
-class auto_tabular:
-    def __init__(self, X, y, problem_type, algorithms, data_cleaning, feature_engineering, hyperparameter_tuning, ensembles):
+class AutoTabular:
+    def __init__(self, X, y, problem_type, algorithms, data_cleaning, feature_engineering, hyperparameter_tuning, ensembles, n_jobs):
         self.X = X
         self.y = y
         self.problem_type = problem_type
@@ -8,8 +8,10 @@ class auto_tabular:
         self.feature_engineering = feature_engineering
         self.hyperparameter_tuning = hyperparameter_tuning
         self.ensembles = ensembles
+        self.n_jobs = n_jobs
 
     def _do_data_cleaning():
+        #it returns a pipeline with all the data cleaning preprocessing steps
         pass
 
     def _do_feature_engineering():
