@@ -2,13 +2,17 @@ class TabularRegressor(AutoTabular):
     def __init__(self):
         super().__init__()
 
-    def _do_data_cleaning():
+    def _create_data_cleaning_pipeline():
+        #it returns a pipeline with all the data cleaning preprocessing steps
         pass
 
-    def _do_feature_engineering():
+    def _create_feature_engineering_pipeline():
         pass
 
-    def _do_hyperparameter_tuning():
+    def _create_hyperparameter_tuning_pipeline():
+        pass
+
+    def _create_ensembles():
         pass
     
     def fit(self, X, y):
