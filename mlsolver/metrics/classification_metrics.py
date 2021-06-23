@@ -11,7 +11,7 @@ class ClassificationMetrics:
         }
     
     def __call__(self, metric, y_true, y_pred):
-        if self.metrics.has_key(metric):
+        if metric in self.metrics:
             return self.metrics[metric](y_true, y_pred)
         else:
             raise Exception(f'{metric} is not a binary classification metric or is not supported.')

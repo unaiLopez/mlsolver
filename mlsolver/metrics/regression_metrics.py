@@ -9,10 +9,13 @@ class RegressionMetrics:
         }
     
     def __call__(self, metric, y_true, y_pred):
-        if self.metrics.has_key(metric):
+        if metric in self.metrics:
             return self.metrics[metric](y_true, y_pred)
         else:
             raise Exception(f'{metric} is not a binary classification metric or is not supported.')
+
+    def get_metric_function(self, metric):
+        return self.metrics[metric]
 
     @staticmethod
     def _mae(y_true, y_pred):
