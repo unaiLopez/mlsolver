@@ -9,6 +9,7 @@ if __name__ == '__main__':
     boston = load_boston()
 
     y = pd.Series(boston['target'])
+
     X = pd.DataFrame(boston['data'], columns=boston.feature_names)
     data = pd.concat([X, y], axis=1)
 

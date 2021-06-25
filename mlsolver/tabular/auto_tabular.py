@@ -1,7 +1,7 @@
 class AutoTabular:
-    def __init__(self, metric_to_optimize, algorithms, feature_engineering, hyperparameter_tuning, ensembles, n_jobs):
+    def __init__(self, metric_to_optimize, models, feature_engineering, hyperparameter_tuning, ensembles, n_jobs):
         self.metric_to_optimize = metric_to_optimize
-        self.algorithms = algorithms
+        self.models = models
         self.feature_engineering = feature_engineering
         self.hyperparameter_tuning = hyperparameter_tuning
         self.ensembles = ensembles

@@ -3,7 +3,7 @@ import pandas as pd
 
 from sklearn.model_selection import KFold, StratifiedKFold
 
-def create_kfolds(data, n_splits=5, shuffle=True):
+def create_kfolds(data, n_splits=10, shuffle=True):
     kf = KFold(n_splits=n_splits, shuffle=shuffle)
 
     folds = list()
@@ -12,7 +12,7 @@ def create_kfolds(data, n_splits=5, shuffle=True):
     
     return folds
 
-def create_stratified_kfolds_for_classification(data, target_column, n_splits=5, shuffle=True):
+def create_stratified_kfolds_for_classification(data, target_column, n_splits=10, shuffle=True):
     kf = StratifiedKFold(n_splits, shuffle=shuffle)
 
     folds = list()
@@ -22,7 +22,7 @@ def create_stratified_kfolds_for_classification(data, target_column, n_splits=5,
     return folds
 
 
-def create_stratified_kfolds_for_regression(data, target_column, n_splits=5):
+def create_stratified_kfolds_for_regression(data, target_column, n_splits=10):
     data = data.sample(frac=1).reset_index(drop=False)
 
     #Apply Sturge's rule
