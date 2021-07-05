@@ -64,11 +64,11 @@ class TabularRegressor(AutoTabular):
         cv = create_stratified_kfolds_for_regression(data=data, target_column=data.columns[-1], n_splits=5) #THIS WILL CRASH IF THE PROBLEM IS A MULTIPLE COLUMN REGRESSION
         
         my_metric = RegressionMetrics().get_metric_function(self.metric_to_optimize)
-        my_scorer = make_scorer(my_metric)
+        my_scorer = make_scorer(my_metric, greater_is_better=False)
 
         search = RandomizedSearchCV(self.pipeline ,
                                     optimization_grid,
-                                    n_iter=100,
+                                    n_iter=50,
                                     scoring=my_scorer,
                                     n_jobs=self.n_jobs,
                                     refit=True,
