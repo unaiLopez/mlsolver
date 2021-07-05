@@ -50,11 +50,14 @@ class TabularRegressor(AutoTabular):
     def fit(self, X, y):
 
         auto_tabular_pipeline_steps = list()
-        auto_tabular_pipeline_steps.append(('preprocessor', self._create_feature_engineering_pipeline(X)))
+
+        if self.feature_engineering:
+            auto_tabular_pipeline_steps.append(('preprocessor', self._create_feature_engineering_pipeline(X)))
+
         auto_tabular_pipeline_steps.append(('feature_selector', SelectKBest(f_regression, k=10)))
         auto_tabular_pipeline_steps.append(('estimator', KNeighborsRegressor()))
         self.pipeline = Pipeline(auto_tabular_pipeline_steps)
-        optimization_grid = TabularRegressionHyperparameters(self.models)()
+        optimization_grid = TabularRegressionHyperparameters(self.models, self.feature_engineering)()
 
         data = pd.concat([X, y], axis=1)
 
@@ -65,7 +68,7 @@ class TabularRegressor(AutoTabular):
 
         search = RandomizedSearchCV(self.pipeline ,
                                     optimization_grid,
-                                    n_iter=300,
+                                    n_iter=100,
                                     scoring=my_scorer,
                                     n_jobs=self.n_jobs,
                                     refit=True,

@@ -1,7 +1,7 @@
-from mlsolver import MLSolver
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_boston
-from mlsolver.metrics import RegressionMetrics
+from sklearn.metrics import mean_absolute_error
+from mlsolver import MLSolver
 
 import pandas as pd
 
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
-    mae = RegressionMetrics()('mae', y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
 
     print(f'Best Model: {model.best_estimator}')
     print()
