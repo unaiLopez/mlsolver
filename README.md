@@ -6,38 +6,38 @@ MLSolver is an open source AutoML framework. In the future, the idea is to be ab
 ### Normal Tabular Data Regression and Classification 
 * Hyperparameter tuning with Optuna
 
-* Improve pipeline parameters
+##### * Improve pipeline parameters
     * Fill nan strategies
     * Feature selection strategies
     * ...
 
-* Feature engineering
+##### * Feature engineering
     * Create feature combinations with operators +-*/
     * Create bins using quantiles
     * Create cluster features
 
-* Add more metrics determining if needs to be maximized and minimized
+##### * Add more metrics determining if needs to be maximized and minimized
 
-* Improve folds package
+##### * Improve folds package
 
-* Handle different regression and classification types of target
+##### * Handle different regression and classification types of target
     * Single column regression
     * Multiple column regression
     * Binary classification
     * Multiclass classification
     * Multilabel classification
 
-* Add more models
+##### * Add more models
     * Neural Networks
     * Catboost
     * Sklearn Gradient Boosting algorithms
 
-* Create ensemble models
+##### * Create ensemble models
     * Bagging
     * Blending
     * Stacking
 
-* Testing
+##### * Testing
     * Create demos for end-to-end testing
     * Test functions
 
