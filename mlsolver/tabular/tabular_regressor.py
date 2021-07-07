@@ -68,7 +68,7 @@ class TabularRegressor(AutoTabular):
 
         search = RandomizedSearchCV(self.pipeline ,
                                     optimization_grid,
-                                    n_iter=50,
+                                    n_iter=1500,
                                     scoring=my_scorer,
                                     n_jobs=self.n_jobs,
                                     refit=True,
@@ -77,7 +77,7 @@ class TabularRegressor(AutoTabular):
         
         search.fit(X, y)
 
-        print(search.cv_results_)
+        #print(search.cv_results_)
 
         self.best_estimator = search.best_estimator_
 

@@ -7,7 +7,7 @@ from .tabular import TabularRegressor, TabularClassifier
 
 class MLSolver:
     def __init__(self, problem_category, problem_type, metric_to_optimize,
-                 models=['SGD', 'SVM', 'AdaBoost', 'LinearRegression', 'KNN', 'RandomForest'],
+                 models=['SGD', 'SVM', 'AdaBoost', 'LinearRegression', 'KNN', 'RandomForest', 'LightGBM'],
                  feature_engineering=True, hyperparameter_tuning=True, ensembles=True, n_jobs=-1):
                  
         self.problem_category = problem_category
