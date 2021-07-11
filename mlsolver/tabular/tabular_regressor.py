@@ -4,26 +4,26 @@ from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.feature_selection import SelectKBest, f_regression
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, OneHotEncoder, LabelEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import make_scorer
+from sklego.preprocessing import ColumnCapper
 
 import numpy as np
 import pandas as pd
 from ..folds.create_folds import create_stratified_kfolds_for_regression
 from ..metrics import RegressionMetrics
-from ..optimization_grids import TabularRegressionHyperparameters
-from mlsolver.tabular import auto_tabular
+from ..optimization_grids import TabularRegressorOptimizer
 
 class TabularRegressor(AutoTabular):
-    def __init__(self, metric_to_optimize, models, feature_engineering, hyperparameter_tuning, ensembles, n_jobs):
-        super().__init__(metric_to_optimize, models, feature_engineering, hyperparameter_tuning, ensembles, n_jobs)
+    def __init__(self, scoring, n_splits, n_trials, timeout, models, feature_engineering, hyperparameter_tuning, ensembles, n_jobs):
+        super().__init__(scoring, n_splits, n_trials, timeout, models, feature_engineering, hyperparameter_tuning, ensembles, n_jobs)
         self.best_estimator = None
 
     def _create_feature_engineering_pipeline(self, X):
         numerical_pipeline = Pipeline([
-            ('cleaner',SimpleImputer()),
+            ('cleaner', SimpleImputer()),
+            ('outlier_capper', ColumnCapper()),
             ('scaler', StandardScaler())
         ])
         
@@ -48,37 +48,23 @@ class TabularRegressor(AutoTabular):
         pass
     
     def fit(self, X, y):
-
-        auto_tabular_pipeline_steps = list()
-
-        if self.feature_engineering:
-            auto_tabular_pipeline_steps.append(('preprocessor', self._create_feature_engineering_pipeline(X)))
-
-        auto_tabular_pipeline_steps.append(('feature_selector', SelectKBest(f_regression, k=10)))
-        auto_tabular_pipeline_steps.append(('estimator', KNeighborsRegressor()))
-        self.pipeline = Pipeline(auto_tabular_pipeline_steps)
-        optimization_grid = TabularRegressionHyperparameters(self.models, self.feature_engineering)()
+        pipeline = Pipeline(steps=[
+            ('preprocessor', self._create_feature_engineering_pipeline(X)),
+            ('feature_selector', SelectKBest(f_regression, k=10)),
+            ('estimator', KNeighborsRegressor())
+        ])
 
         data = pd.concat([X, y], axis=1)
+        cv = create_stratified_kfolds_for_regression(data=data, target_column=data.columns[-1], n_splits=self.n_splits) #THIS WILL CRASH IF THE PROBLEM IS A MULTIPLE COLUMN REGRESSION
+        scoring = RegressionMetrics().metrics[self.scoring]
 
-        cv = create_stratified_kfolds_for_regression(data=data, target_column=data.columns[-1], n_splits=5) #THIS WILL CRASH IF THE PROBLEM IS A MULTIPLE COLUMN REGRESSION
-        
-        my_metric = RegressionMetrics().get_metric_function(self.metric_to_optimize)
-        my_scorer = make_scorer(my_metric, greater_is_better=False)
+        optimizer = TabularRegressorOptimizer(pipeline, X, y, scoring, cv, self.n_jobs, self.models, self.feature_engineering)
 
-        search = RandomizedSearchCV(self.pipeline ,
-                                    optimization_grid,
-                                    n_iter=1500,
-                                    scoring=my_scorer,
-                                    n_jobs=self.n_jobs,
-                                    refit=True,
-                                    verbose=3,
-                                    cv=cv)
-        
-        search.fit(X, y)
+        study, best_params = optimizer.optimize(direction='minimize', n_trials=self.n_trials, timeout=self.timeout, n_jobs=self.n_jobs)
 
-        #print(search.cv_results_)
+        self.best_estimator = pipeline.set_params(**best_params)
+        self.best_estimator.fit(X, y)
 
-        self.best_estimator = search.best_estimator_
+        print(study.trials_dataframe().head(10))
 
         return self

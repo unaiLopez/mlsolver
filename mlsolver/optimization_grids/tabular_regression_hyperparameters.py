@@ -2,10 +2,12 @@ from sklearn.linear_model import LinearRegression, SGDRegressor
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, OneHotEncoder, LabelEncoder
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, OneHotEncoder
+from sklearn.model_selection import cross_val_score
 from xgboost import XGBRegressor
 from lightgbm import LGBMRegressor
 import numpy as np
+from optuna import trial
 
 class TabularRegressionHyperparameters:
     def __init__(self, models, feature_engineering):
@@ -37,8 +39,11 @@ class TabularRegressionHyperparameters:
     def _load_random_forest_hyperparameters(self):
         hyperparameters_dict = {}
         if self.feature_engineering:
-            hyperparameters_dict['preprocessor__numerical__scaler'] = [None]
+            hyperparameters_dict['preprocessor__numerical__outlier_capper__quantile_range'] = [(0, 100), (1, 99), (5, 95)]
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__interpolation'] = ['linear', 'lower', 'higher', 'nearest', 'midpoint']
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__discard_infs'] = [True, False]
             hyperparameters_dict['preprocessor__numerical__cleaner__strategy'] = self.numerical_clean_strategies
+            hyperparameters_dict['preprocessor__numerical__scaler'] = [None]
             hyperparameters_dict['preprocessor__categorical__cleaner__strategy'] = self.categorical_clean_strategies
             hyperparameters_dict['preprocessor__categorical__encoder'] = [OneHotEncoder(sparse=False)]
             hyperparameters_dict['feature_selector__k'] = ['all', 3, 6, 12]
@@ -56,8 +61,11 @@ class TabularRegressionHyperparameters:
     def _load_knn_hyperparameters(self):
         hyperparameters_dict = {}
         if self.feature_engineering:
-            hyperparameters_dict['preprocessor__numerical__scaler'] = self.scalers
+            hyperparameters_dict['preprocessor__numerical__outlier_capper__quantile_range'] = [(0, 100), (1, 99), (5, 95)]
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__interpolation'] = ['linear', 'lower', 'higher', 'nearest', 'midpoint']
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__discard_infs'] = [True, False]
             hyperparameters_dict['preprocessor__numerical__cleaner__strategy'] = self.numerical_clean_strategies
+            hyperparameters_dict['preprocessor__numerical__scaler'] = self.scalers
             hyperparameters_dict['preprocessor__categorical__cleaner__strategy'] = self.categorical_clean_strategies
             hyperparameters_dict['preprocessor__categorical__encoder'] = [OneHotEncoder(sparse=False)]
             hyperparameters_dict['feature_selector__k'] = ['all', 3, 6, 12]
@@ -74,8 +82,11 @@ class TabularRegressionHyperparameters:
     def _load_svm_hyperparameters(self):
         hyperparameters_dict = {}
         if self.feature_engineering:
-            hyperparameters_dict['preprocessor__numerical__scaler'] = self.scalers
+            hyperparameters_dict['preprocessor__numerical__outlier_capper__quantile_range'] = [(0, 100), (1, 99), (5, 95)]
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__interpolation'] = ['linear', 'lower', 'higher', 'nearest', 'midpoint']
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__discard_infs'] = [True, False]
             hyperparameters_dict['preprocessor__numerical__cleaner__strategy'] = self.numerical_clean_strategies
+            hyperparameters_dict['preprocessor__numerical__scaler'] = self.scalers
             hyperparameters_dict['preprocessor__categorical__cleaner__strategy'] = self.categorical_clean_strategies
             hyperparameters_dict['preprocessor__categorical__encoder'] = [OneHotEncoder(sparse=False)]
             hyperparameters_dict['feature_selector__k'] = ['all', 3, 6, 12]
@@ -90,8 +101,11 @@ class TabularRegressionHyperparameters:
     def _load_linear_regression_hyperparameters(self):
         hyperparameters_dict = {}
         if self.feature_engineering:
-            hyperparameters_dict['preprocessor__numerical__scaler'] = self.scalers
+            hyperparameters_dict['preprocessor__numerical__outlier_capper__quantile_range'] = [(0, 100), (1, 99), (5, 95)]
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__interpolation'] = ['linear', 'lower', 'higher', 'nearest', 'midpoint']
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__discard_infs'] = [True, False]
             hyperparameters_dict['preprocessor__numerical__cleaner__strategy'] = self.numerical_clean_strategies
+            hyperparameters_dict['preprocessor__numerical__scaler'] = self.scalers
             hyperparameters_dict['preprocessor__categorical__cleaner__strategy'] = self.categorical_clean_strategies
             hyperparameters_dict['preprocessor__categorical__encoder'] = [OneHotEncoder(sparse=False)]
             hyperparameters_dict['feature_selector__k'] = ['all', 3, 6, 12]
@@ -105,8 +119,11 @@ class TabularRegressionHyperparameters:
     def _load_sgd_hyperparameters(self):
         hyperparameters_dict = {}
         if self.feature_engineering:
-            hyperparameters_dict['preprocessor__numerical__scaler'] = self.scalers
+            hyperparameters_dict['preprocessor__numerical__outlier_capper__quantile_range'] = [(0, 100), (1, 99), (5, 95)]
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__interpolation'] = ['linear', 'lower', 'higher', 'nearest', 'midpoint']
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__discard_infs'] = [True, False]
             hyperparameters_dict['preprocessor__numerical__cleaner__strategy'] = self.numerical_clean_strategies
+            hyperparameters_dict['preprocessor__numerical__scaler'] = self.scalers
             hyperparameters_dict['preprocessor__categorical__cleaner__strategy'] = self.categorical_clean_strategies
             hyperparameters_dict['preprocessor__categorical__encoder'] = [OneHotEncoder(sparse=False)]
             hyperparameters_dict['feature_selector__k'] = ['all', 3, 6, 12]
@@ -121,8 +138,11 @@ class TabularRegressionHyperparameters:
     def _load_adaboost_hyperparameters(self):
         hyperparameters_dict = {}
         if self.feature_engineering:
-            hyperparameters_dict['preprocessor__numerical__scaler'] = [None]
+            hyperparameters_dict['preprocessor__numerical__outlier_capper__quantile_range'] = [(0, 100), (1, 99), (5, 95)]
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__interpolation'] = ['linear', 'lower', 'higher', 'nearest', 'midpoint']
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__discard_infs'] = [True, False]
             hyperparameters_dict['preprocessor__numerical__cleaner__strategy'] = self.numerical_clean_strategies
+            hyperparameters_dict['preprocessor__numerical__scaler'] = [None]
             hyperparameters_dict['preprocessor__categorical__cleaner__strategy'] = self.categorical_clean_strategies
             hyperparameters_dict['preprocessor__categorical__encoder'] = [OneHotEncoder(sparse=False)]
             hyperparameters_dict['feature_selector__k'] = ['all', 3, 6, 12]
@@ -137,8 +157,11 @@ class TabularRegressionHyperparameters:
     def _load_xgboost_hyperparameters(self):
         hyperparameters_dict = {}
         if self.feature_engineering:
-            hyperparameters_dict['preprocessor__numerical__scaler'] = [None]
+            hyperparameters_dict['preprocessor__numerical__outlier_capper__quantile_range'] = [(0, 100), (1, 99), (5, 95)]
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__interpolation'] = ['linear', 'lower', 'higher', 'nearest', 'midpoint']
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__discard_infs'] = [True, False]
             hyperparameters_dict['preprocessor__numerical__cleaner__strategy'] = self.numerical_clean_strategies
+            hyperparameters_dict['preprocessor__numerical__scaler'] = [None]
             hyperparameters_dict['preprocessor__categorical__cleaner__strategy'] = self.categorical_clean_strategies
             hyperparameters_dict['preprocessor__categorical__encoder'] = [OneHotEncoder(sparse=False)]
             hyperparameters_dict['feature_selector__k'] = ['all', 3, 6, 12]
@@ -160,8 +183,11 @@ class TabularRegressionHyperparameters:
     def _load_lightgbm_hyperparameters(self):
         hyperparameters_dict = {}
         if self.feature_engineering:
-            hyperparameters_dict['preprocessor__numerical__scaler'] = [None]
+            hyperparameters_dict['preprocessor__numerical__outlier_capper__quantile_range'] = [(0, 100), (1, 99), (5, 95)]
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__interpolation'] = ['linear', 'lower', 'higher', 'nearest', 'midpoint']
+            #hyperparameters_dict['preprocessor__numerical__outlier_capper__discard_infs'] = [True, False]
             hyperparameters_dict['preprocessor__numerical__cleaner__strategy'] = self.numerical_clean_strategies
+            hyperparameters_dict['preprocessor__numerical__scaler'] = [None]
             hyperparameters_dict['preprocessor__categorical__cleaner__strategy'] = self.categorical_clean_strategies
             hyperparameters_dict['preprocessor__categorical__encoder'] = [OneHotEncoder(sparse=False)]
             hyperparameters_dict['feature_selector__k'] = ['all', 3, 6, 12]
