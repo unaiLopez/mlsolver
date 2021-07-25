@@ -54,20 +54,20 @@ class TabularRegressor(AutoTabular):
         ])
 
         data = pd.concat([X, y], axis=1)
-        folds = create_stratified_kfolds_for_regression(data=data, target_column=data.columns[-1], n_splits=self.n_splits) #THIS WILL CRASH IF THE PROBLEM IS A MULTIPLE COLUMN REGRESSION
+        cv = create_stratified_kfolds_for_regression(data=data, target_column=data.columns[-1], n_splits=self.n_splits) #THIS WILL CRASH IF THE PROBLEM IS A MULTIPLE COLUMN REGRESSION
         
         #Retrieve scorer and optimization direction
         regression_scorers = RegressionScorers()
         scorer, direction = regression_scorers.get_scorer(self.scoring), regression_scorers.get_direction(self.scoring)
-        print(scorer)
-        print(direction)
 
-        optimizer = TabularRegressorOptimizer(pipeline, X, y, scorer, folds, self.n_jobs, self.models, self.feature_engineering)
+        optimizer = TabularRegressorOptimizer(pipeline, X, y, scorer, cv, self.n_jobs, self.models, self.feature_engineering)
         study, best_params = optimizer.optimize(direction=direction, n_trials=self.n_trials, timeout=self.timeout, n_jobs=self.n_jobs)
 
-        self.best_estimator = pipeline.set_params(**best_params)
-        self.best_estimator.fit(X, y)
+        pipeline.set_params(**best_params)
+        pipeline.fit(X, y)
 
-        print(study.trials_dataframe().head(10))
+        self.best_estimator = pipeline
+
+        study.trials_dataframe().to_csv('trials_dataframe.csv', index=False)
 
         return self
