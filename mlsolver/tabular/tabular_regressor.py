@@ -6,13 +6,12 @@ from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.metrics import make_scorer
 from sklego.preprocessing import ColumnCapper
 
 import numpy as np
 import pandas as pd
 from ..folds.create_folds import create_stratified_kfolds_for_regression
-from ..metrics import RegressionMetrics
+from ..scorers import RegressionScorers
 from ..optimization_grids import TabularRegressorOptimizer
 
 class TabularRegressor(AutoTabular):
@@ -20,7 +19,7 @@ class TabularRegressor(AutoTabular):
         super().__init__(scoring, n_splits, n_trials, timeout, models, feature_engineering, hyperparameter_tuning, ensembles, n_jobs)
         self.best_estimator = None
 
-    def _create_feature_engineering_pipeline(self, X):
+    def _create_feature_engineering_pipeline(self):
         numerical_pipeline = Pipeline([
             ('cleaner', SimpleImputer()),
             ('outlier_capper', ColumnCapper()),
@@ -49,18 +48,22 @@ class TabularRegressor(AutoTabular):
     
     def fit(self, X, y):
         pipeline = Pipeline(steps=[
-            ('preprocessor', self._create_feature_engineering_pipeline(X)),
+            ('preprocessor', self._create_feature_engineering_pipeline()),
             ('feature_selector', SelectKBest(f_regression, k=10)),
             ('estimator', KNeighborsRegressor())
         ])
 
         data = pd.concat([X, y], axis=1)
-        cv = create_stratified_kfolds_for_regression(data=data, target_column=data.columns[-1], n_splits=self.n_splits) #THIS WILL CRASH IF THE PROBLEM IS A MULTIPLE COLUMN REGRESSION
-        scoring = RegressionMetrics().metrics[self.scoring]
+        folds = create_stratified_kfolds_for_regression(data=data, target_column=data.columns[-1], n_splits=self.n_splits) #THIS WILL CRASH IF THE PROBLEM IS A MULTIPLE COLUMN REGRESSION
+        
+        #Retrieve scorer and optimization direction
+        regression_scorers = RegressionScorers()
+        scorer, direction = regression_scorers.get_scorer(self.scoring), regression_scorers.get_direction(self.scoring)
+        print(scorer)
+        print(direction)
 
-        optimizer = TabularRegressorOptimizer(pipeline, X, y, scoring, cv, self.n_jobs, self.models, self.feature_engineering)
-
-        study, best_params = optimizer.optimize(direction='minimize', n_trials=self.n_trials, timeout=self.timeout, n_jobs=self.n_jobs)
+        optimizer = TabularRegressorOptimizer(pipeline, X, y, scorer, folds, self.n_jobs, self.models, self.feature_engineering)
+        study, best_params = optimizer.optimize(direction=direction, n_trials=self.n_trials, timeout=self.timeout, n_jobs=self.n_jobs)
 
         self.best_estimator = pipeline.set_params(**best_params)
         self.best_estimator.fit(X, y)

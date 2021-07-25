@@ -3,7 +3,6 @@ from optuna import create_study
 from sklearn.model_selection import cross_val_score
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, OneHotEncoder
-from sklearn.metrics import make_scorer
 
 from sklearn.linear_model import LinearRegression, SGDRegressor
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
@@ -13,11 +12,11 @@ from xgboost import XGBRegressor
 from lightgbm import LGBMRegressor
 
 class TabularRegressorOptimizer:
-    def __init__(self, pipeline, X, y, scoring, cv, n_jobs, models, feature_engineering):
+    def __init__(self, pipeline, X, y, scorer, cv, n_jobs, models, feature_engineering):
         self.pipeline = pipeline
         self.X = X
         self.y = y
-        self.scoring = scoring
+        self.scorer = scorer
         self.cv = cv
         self.n_jobs = n_jobs
         self.models = models
@@ -107,9 +106,7 @@ class TabularRegressorOptimizer:
         pipeline_params = {**feature_engineering_params, **model_params}
         pipeline = self.pipeline.set_params(**pipeline_params)
 
-        my_scorer = make_scorer(self.scoring, greater_is_better=False)
-
-        scores = cross_val_score(pipeline, self.X, self.y, scoring=my_scorer, n_jobs=self.n_jobs, cv=self.cv)
+        scores = cross_val_score(pipeline, self.X, self.y, scoring=self.scorer, n_jobs=self.n_jobs, cv=self.cv)
         score = scores.mean()
 
         return score
