@@ -1,5 +1,4 @@
 from .auto_tabular import AutoTabular
-from sklearn.model_selection import RandomizedSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer, make_column_selector
@@ -12,7 +11,7 @@ import numpy as np
 import pandas as pd
 from ..folds.create_folds import create_stratified_kfolds_for_regression
 from ..scorers import RegressionScorers
-from ..optimization_grids import TabularRegressorOptimizer
+from ..optimization import TabularRegressorOptimizer
 
 class TabularRegressor(AutoTabular):
     def __init__(self, scoring, n_splits, n_trials, timeout, models, feature_engineering, hyperparameter_tuning, ensembles, n_jobs):
@@ -59,7 +58,7 @@ class TabularRegressor(AutoTabular):
         #Retrieve scorer and optimization direction
         regression_scorers = RegressionScorers()
         scorer, direction = regression_scorers.get_scorer(self.scoring), regression_scorers.get_direction(self.scoring)
-
+        
         optimizer = TabularRegressorOptimizer(pipeline, X, y, scorer, cv, self.n_jobs, self.models, self.feature_engineering)
         study, best_params = optimizer.optimize(direction=direction, n_trials=self.n_trials, timeout=self.timeout, n_jobs=self.n_jobs)
 
@@ -68,6 +67,7 @@ class TabularRegressor(AutoTabular):
 
         self.best_estimator = pipeline
 
-        study.trials_dataframe().to_csv('trials_dataframe.csv', index=False)
+        trials_dataframe = study.trials_dataframe().sort_values(by='value')
+        trials_dataframe.to_csv('trials_dataframe.csv', index=False)
 
         return self
